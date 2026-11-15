@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -597,6 +597,8 @@
     <!-- Official Mock Exam Generator & PDF Export Modal -->
     <div id="exam-generator-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
         <div class="glass-card w-full max-w-6xl h-[94vh] max-h-[96vh] rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col">
+            <!-- Collapsible Toolbar Wrapper (Auto-hides when scrolling down, toggleable manually) -->
+            <div id="exam-modal-toolbar-wrapper" class="transition-all duration-300 ease-in-out overflow-hidden shrink-0" style="max-height: 420px; opacity: 1;">
             <!-- Modal Top Bar -->
             <div class="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
@@ -680,6 +682,23 @@
                     </button>
                     <button onclick="markGeneratedExamAsReview()" class="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition" title="Đánh dấu các câu trong đề này sang trạng thái Đã thành thạo">
                         <i class="fa-solid fa-check-double mr-1"></i>Đã làm xong
+                    </button>
+                </div>
+            </div>
+            </div>
+
+            <!-- Compact Handle / Toggle Bar to Show or Hide Toolbar -->
+            <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-1 flex items-center justify-between text-[11px] text-slate-400 shrink-0 select-none">
+                <div class="flex items-center gap-2">
+                    <span id="exam-toolbar-hint-text" class="text-slate-400"><i class="fa-solid fa-sliders text-indigo-400 mr-1"></i>Thanh công cụ đề thi</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleExamToolbarManual()" id="btn-toggle-exam-toolbar" class="px-2.5 py-0.5 rounded-md bg-indigo-600/25 hover:bg-indigo-600/45 text-indigo-200 border border-indigo-500/40 font-semibold transition flex items-center gap-1.5">
+                        <i id="exam-toolbar-toggle-icon" class="fa-solid fa-chevron-up text-[10px]"></i>
+                        <span id="exam-toolbar-toggle-label">Thu gọn menu</span>
+                    </button>
+                    <button onclick="closeExamGeneratorModal()" id="exam-compact-close-btn" class="hidden px-2 py-0.5 rounded-md bg-slate-800 hover:bg-rose-600/30 text-slate-300 hover:text-rose-200 border border-slate-700 transition" title="Đóng cửa sổ xem đề">
+                        <i class="fa-solid fa-xmark"></i> Đóng
                     </button>
                 </div>
             </div>
@@ -4218,8 +4237,41 @@
             }
         }
 
+        let isExamToolbarCollapsed = false;
+
+        function setExamToolbarCollapsed(collapsed) {
+            const wrapper = document.getElementById('exam-modal-toolbar-wrapper');
+            const icon = document.getElementById('exam-toolbar-toggle-icon');
+            const label = document.getElementById('exam-toolbar-toggle-label');
+            const hint = document.getElementById('exam-toolbar-hint-text');
+            const compactClose = document.getElementById('exam-compact-close-btn');
+            if (!wrapper) return;
+
+            isExamToolbarCollapsed = collapsed;
+            if (collapsed) {
+                wrapper.style.maxHeight = '0px';
+                wrapper.style.opacity = '0';
+                if (icon) icon.className = 'fa-solid fa-chevron-down text-[10px]';
+                if (label) label.textContent = 'Hiện lại menu công cụ';
+                if (hint) hint.innerHTML = '<i class="fa-solid fa-eye text-emerald-400 mr-1"></i>Đang thu gọn menu công cụ';
+                if (compactClose) compactClose.classList.remove('hidden');
+            } else {
+                wrapper.style.maxHeight = '420px';
+                wrapper.style.opacity = '1';
+                if (icon) icon.className = 'fa-solid fa-chevron-up text-[10px]';
+                if (label) label.textContent = 'Thu gọn menu';
+                if (hint) hint.innerHTML = '<i class="fa-solid fa-sliders text-indigo-400 mr-1"></i>Thanh công cụ đề thi';
+                if (compactClose) compactClose.classList.add('hidden');
+            }
+        }
+
+        function toggleExamToolbarManual() {
+            setExamToolbarCollapsed(!isExamToolbarCollapsed);
+        }
+
         function openExamGeneratorModal() {
             currentExamViewMode = 'exam';
+            setExamToolbarCollapsed(false);
             const btnExam = document.getElementById('tab-btn-view-exam');
             const btnKey = document.getElementById('tab-btn-view-key');
             if (btnExam && btnKey) {
